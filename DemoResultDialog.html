@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    
+    .button-group {
+      margin-top: 20px;
+      text-align: right;
+    }
+    
+    button {
+      padding: 10px 20px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .btn-success {
+      background-color: #28a745;
+      color: white;
+    }
+    
+    .btn-danger {
+      background-color: #dc3545;
+      color: white;
+    }
+    
+    .btn-secondary {
+      background-color: #ccc;
+      color: #333;
+    }
+    
+    .btn-success:hover {
+      background-color: #218838;
+    }
+    
+    .btn-danger:hover {
+      background-color: #c82333;
+    }
+    
+    .message {
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 4px;
+      display: none;
+    }
+    
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .info {
+      background-color: #cce5ff;
+      color: #004085;
+      border: 1px solid #b8daff;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="info">
+    ℹ️ Process the result of a demo. PASSED students will be moved to active sheets, FAILED demos will release the time slot.
+  </div>
+  
+  <div id="message" class="message"></div>
+  
+  <div class="form-group">
+    <label for="demoSheet">Demo Sheet *</label>
+    <select id="demoSheet">
+      <option value="">Select demo sheet</option>
+      <option value="Demo Assigned - Normal">Demo Assigned - Normal</option>
+      <option value="Demo Assigned - Internship">Demo Assigned - Internship</option>
+      <option value="Demo Assigned - Trial">Demo Assigned - Trial</option>
+      <option value="Demo Assigned - VIP">Demo Assigned - VIP</option>
+      <option value="Demo Assigned - Basic">Demo Assigned - Basic</option>
+    </select>
+  </div>
+  
+  <div class="form-group">
+    <label for="rowNumber">Row Number (of the demo in the sheet) *</label>
+    <input type="number" id="rowNumber" min="2" placeholder="e.g., 2, 3, 4..." required>
+  </div>
+  
+  <div class="form-group">
+    <label for="result">Demo Result *</label>
+    <select id="result">
+      <option value="">Select result</option>
+      <option value="PASSED">PASSED</option>
+      <option value="FAILED">FAILED</option>
+    </select>
+  </div>
+  
+  <div class="button-group">
+    <button class="btn-secondary" onclick="google.script.host.close()">Cancel</button>
+    <button class="btn-danger" onclick="submitForm('FAILED')">Mark Failed</button>
+    <button class="btn-success" onclick="submitForm('PASSED')">Mark Passed</button>
+  </div>
+  
+  <script>
+    function submitForm(resultOverride) {
+      const demoSheet = document.getElementById('demoSheet').value;
+      const rowNumber = parseInt(document.getElementById('rowNumber').value);
+      const result = resultOverride || document.getElementById('result').value;
+      
+      if (!demoSheet || !rowNumber || !result) {
+        showMessage('Please fill in all required fields', 'error');
+        return;
+      }
+      
+      if (rowNumber < 2) {
+        showMessage('Row number must be 2 or greater (row 1 is the header)', 'error');
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onFailure)
+        .recordDemoResult(demoSheet, rowNumber, result);
+    }
+    
+    function onSuccess() {
+      showMessage('Demo result recorded successfully!', 'success');
+      setTimeout(() => {
+        google.script.host.close();
+      }, 2000);
+    }
+    
+    function onFailure(error) {
+      showMessage('Error: ' + error.message, 'error');
+    }
+    
+    function showMessage(text, type) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.textContent = text;
+      messageDiv.className = 'message ' + type;
+      messageDiv.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
